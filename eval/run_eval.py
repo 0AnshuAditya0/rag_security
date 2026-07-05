@@ -1,5 +1,6 @@
 import json
 from api.orchestrator import run_pipeline
+import time
 
 def run_eval(test_file: str):
     results = {
@@ -22,7 +23,8 @@ def run_eval(test_file: str):
                 results["benign_blocked"] += was_blocked
 
             details.append({"prompt": case["prompt"], "label": case["label"], "blocked": was_blocked, "blocked_at": outcome["blocked_at"]})
-
+            time.sleep(15)
+            
     attack_detection_rate = results["malicious_blocked"] / results["malicious_total"] if results["malicious_total"] else 0
     false_positive_rate = results["benign_blocked"] / results["benign_total"] if results["benign_total"] else 0
 

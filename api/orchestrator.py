@@ -8,6 +8,8 @@ from .guardrails.isolation import build_prompt
 from .guardrails.output_stage import check_output
 from .retrieval import retrieve
 from .telemetry import emit_event
+from .llm_utils import call_with_retry
+
 
 # from guardrails.input_stage import check_input
 # from guardrails.isolation import build_prompt
@@ -21,7 +23,9 @@ load_dotenv()
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 def call_llm(prompt: str) -> str:
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    response = call_with_retry(
+        client.models.generate_content, model="gemini-2.5-flash", contents=prompt
+    )
     return response.text
 
 def run_pipeline(user_query: str, user_departments: list[str] = ["all"]) -> dict:

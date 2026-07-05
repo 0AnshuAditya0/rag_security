@@ -5,6 +5,7 @@ from google import genai
 from google.genai import types
 from presidio_analyzer import AnalyzerEngine
 from presidio_analyzer.nlp_engine import NlpEngineProvider
+from ..llm_utils import call_with_retry
 
 load_dotenv()
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -27,7 +28,8 @@ Answer to evaluate:
 On a scale of 0.0 to 1.0, how well is the answer supported by the context above?
 Reply with ONLY a number between 0.0 and 1.0, nothing else."""
 
-    response = client.models.generate_content(
+    response = call_with_retry(
+        client.models.generate_content,
         model="gemini-2.5-flash",
         contents=judge_prompt,
         config=types.GenerateContentConfig(temperature=0),
