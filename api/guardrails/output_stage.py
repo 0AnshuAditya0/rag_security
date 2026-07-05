@@ -30,7 +30,7 @@ Reply with ONLY a number between 0.0 and 1.0, nothing else."""
 
     response = call_with_retry(
         client.models.generate_content,
-        model="gemini-2.5-flash",
+        model="gemini-2.5-flash-lite",
         contents=judge_prompt,
         config=types.GenerateContentConfig(temperature=0),
     )

@@ -24,7 +24,7 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 def call_llm(prompt: str) -> str:
     response = call_with_retry(
-        client.models.generate_content, model="gemini-2.5-flash", contents=prompt
+        client.models.generate_content, model="gemini-2.5-flash-lite", contents=prompt
     )
     return response.text
 
