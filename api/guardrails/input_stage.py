@@ -1,11 +1,6 @@
 import re
-from presidio_analyzer import AnalyzerEngine
+from .pii_utils import detect_pii
 
-pii_analyzer = AnalyzerEngine()
-
-# Simple, fast first-pass injection heuristic — catches common attack phrasing.
-# This is intentionally lightweight; the eval phase later will show its limits
-# and that's exactly the kind of honest finding a real security write-up wants.
 INJECTION_PATTERNS = [
     r"ignore (all |the )?(previous|prior|above) instructions",
     r"disregard (all |the )?(previous|prior|above)",
@@ -24,12 +19,12 @@ def score_injection(text: str) -> float:
 
 def check_input(user_query: str) -> dict:
     injection_score = score_injection(user_query)
-    pii_findings = pii_analyzer.analyze(text=user_query, language="en")
+    pii_entities = detect_pii(user_query)
 
     return {
         "blocked": injection_score >= 0.8,
         "injection_score": injection_score,
-        "pii_entities": [f.entity_type for f in pii_findings],
+        "pii_entities": pii_entities,
     }
 
 if __name__ == "__main__":

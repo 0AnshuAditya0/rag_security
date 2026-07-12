@@ -5,6 +5,7 @@ from google.genai import types
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 from chunker import chunk_text
+from qdrant_client.models import PayloadSchemaType
 
 load_dotenv()
 
@@ -12,7 +13,7 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 qdrant = QdrantClient(url=os.environ["QDRANT_URL"], api_key=os.environ.get("QDRANT_API_KEY"))
 
 COLLECTION = "company_docs"
-DIM = 768  # reduced from Gemini's default 3072 to keep storage small
+DIM = 768 
 
 def ensure_collection():
     if not qdrant.collection_exists(COLLECTION):
@@ -20,6 +21,11 @@ def ensure_collection():
             collection_name=COLLECTION,
             vectors_config=VectorParams(size=DIM, distance=Distance.COSINE),
         )
+    qdrant.create_payload_index(
+        collection_name=COLLECTION,
+        field_name="department",
+        field_schema=PayloadSchemaType.KEYWORD,
+    )
 
 def embed_batch(texts: list[str], task_type: str) -> list[list[float]]:
     result = client.models.embed_content(

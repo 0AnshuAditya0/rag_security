@@ -3,9 +3,8 @@ import re
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from presidio_analyzer import AnalyzerEngine
-from presidio_analyzer.nlp_engine import NlpEngineProvider
 from ..llm_utils import call_with_retry
+from .pii_utils import detect_pii
 
 load_dotenv()
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -14,8 +13,6 @@ nlp_config = {
     "nlp_engine_name": "spacy",
     "models": [{"lang_code": "en", "model_name": "en_core_web_sm"}],
 }
-provider = NlpEngineProvider(nlp_configuration=nlp_config)
-pii_analyzer = AnalyzerEngine(nlp_engine=provider.create_engine(), supported_languages=["en"])
 
 def check_groundedness(answer: str, context_chunks: list[str]) -> float:
     context = "\n".join(context_chunks)
@@ -44,14 +41,13 @@ SENSITIVE_ENTITIES = {
 
 def check_output(answer: str, context_chunks: list[str]) -> dict:
     groundedness_score = check_groundedness(answer, context_chunks)
-    pii_findings = pii_analyzer.analyze(text=answer, language="en")
-    sensitive_hits = [f.entity_type for f in pii_findings if f.entity_type in SENSITIVE_ENTITIES]
+    sensitive_hits = detect_pii(answer) 
 
     return {
         "blocked": groundedness_score < 0.5 or len(sensitive_hits) > 0,
         "groundedness_score": groundedness_score,
         "leaked_pii": sensitive_hits,
-        "all_detected_entities": [f.entity_type for f in pii_findings],  # kept for debugging/eval, doesn't affect blocking
+        "all_detected_entities": sensitive_hits,
     }
 
 if __name__ == "__main__":
