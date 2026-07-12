@@ -9,7 +9,7 @@ from chunker import chunk_text
 load_dotenv()
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-qdrant = QdrantClient(url=os.environ["QDRANT_URL"])
+qdrant = QdrantClient(url=os.environ["QDRANT_URL"], api_key=os.environ.get("QDRANT_API_KEY"))
 
 COLLECTION = "company_docs"
 DIM = 768  # reduced from Gemini's default 3072 to keep storage small
